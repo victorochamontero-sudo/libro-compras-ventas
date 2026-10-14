@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mi Libro de Compras y Ventas — Chile V7</title>
+<title>Mi Libro de Compras y Ventas — Chile V8</title>
 <style>
   * { box-sizing: border-box; }
   body { font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; background: #f4f6f9; color: #1f2937; }
@@ -79,7 +79,7 @@
 <body>
 <header>
   <h1>📘 Mi Libro de Compras y Ventas — Chile</h1>
-  <p>Versión 7 · Observaciones · Ordenar columnas · Datos locales · IVA referencial</p>
+  <p>Versión 8 · Observaciones · Ordenar columnas · Reporte F29 · Datos locales · IVA referencial</p>
 </header>
 
 <div class="container">
@@ -222,6 +222,7 @@
       <button class="btn-secondary" onclick="document.getElementById('file-respaldo').click()">📥 Restaurar respaldo</button>
       <input type="file" id="file-respaldo" accept=".json" class="hidden" onchange="restaurarRespaldo(event)">
       <button class="btn-secondary" onclick="window.print()">🖨 Imprimir / PDF</button>
+      <button class="btn-primary" onclick="reporteF29()">📄 Reporte F29</button>
     </div>
   </div>
 
@@ -593,7 +594,6 @@ function render() {
   document.getElementById('totales').innerHTML =
     '<div><strong>Documentos:</strong> ' + filtrados.length + '</div>' +
     '<div><strong>Neto:</strong> ' + fmt(totNeto) + '</div>' +
-    '<div><strong>Exento:</strong> '
     '<div><strong>Exento:</strong> ' + fmt(totExento) + '</div>' +
     '<div><strong>IVA:</strong> ' + fmt(totIVA) + '</div>' +
     '<div><strong>Total:</strong> ' + fmt(totTotal) + '</div>';
@@ -737,6 +737,182 @@ function borrarTodoElSistema() {
   limpiarFormulario();
   render();
   alert('✅ Sistema completamente vacío. Puedes empezar de cero.');
+}
+
+/* ==========================================
+   REPORTE F29 REFERENCIAL
+   ========================================== */
+function reporteF29() {
+  var meses = {};
+  documentos.forEach(function(d) {
+    if (!d.fecha) return;
+    var mes = d.fecha.slice(0, 7);
+    meses[mes] = (meses[mes] || 0) + 1;
+  });
+  var listaMeses = Object.keys(meses).sort().reverse();
+
+  if (listaMeses.length === 0) {
+    alert('No hay documentos registrados. Registra al menos uno antes de generar el reporte.');
+    return;
+  }
+
+  var opciones = listaMeses.map(function(m) { return m + ' (' + meses[m] + ' documentos)'; }).join('\n');
+  var mesElegido = prompt(
+    '¿De qué mes quieres el reporte F29 referencial?\n\n' +
+    'Escribe el mes en formato AAAA-MM (ejemplo: 2026-10)\n\n' +
+    'Meses disponibles:\n' + opciones,
+    listaMeses[0]
+  );
+  if (!mesElegido) return;
+  mesElegido = mesElegido.trim();
+
+  var filtrados = documentos.filter(function(d) { return d.fecha && d.fecha.startsWith(mesElegido); });
+  if (filtrados.length === 0) {
+    alert('No hay documentos en el mes ' + mesElegido);
+    return;
+  }
+
+  var totales = {
+    facturasVenta:      { cant: 0, iva: 0, neto: 0, total: 0 },
+    boletasVenta:       { cant: 0, iva: 0, neto: 0, total: 0 },
+    notasCreditoVenta:  { cant: 0, iva: 0, neto: 0, total: 0 },
+    notasDebitoVenta:   { cant: 0, iva: 0, neto: 0, total: 0 },
+    otrasVentas:        { cant: 0, iva: 0, neto: 0, total: 0 },
+    facturasCompra:     { cant: 0, iva: 0, neto: 0, total: 0 },
+    notasCreditoCompra: { cant: 0, iva: 0, neto: 0, total: 0 },
+    notasDebitoCompra:  { cant: 0, iva: 0, neto: 0, total: 0 },
+    otrasCompras:       { cant: 0, iva: 0, neto: 0, total: 0 }
+  };
+
+  filtrados.forEach(function(d) {
+    var signo = d.tipoDoc === 'Nota de Crédito' ? -1 : 1;
+    var esFactura = d.tipoDoc && d.tipoDoc.indexOf('Factura') === 0;
+    var esBoleta = d.tipoDoc && d.tipoDoc.indexOf('Boleta') === 0;
+    var esNotaCredito = d.tipoDoc === 'Nota de Crédito';
+    var esNotaDebito = d.tipoDoc === 'Nota de Débito';
+
+    var grupo;
+    if (d.tipo === 'venta') {
+      if (esFactura) grupo = 'facturasVenta';
+      else if (esBoleta) grupo = 'boletasVenta';
+      else if (esNotaCredito) grupo = 'notasCreditoVenta';
+      else if (esNotaDebito) grupo = 'notasDebitoVenta';
+      else grupo = 'otrasVentas';
+    } else {
+      if (esFactura) grupo = 'facturasCompra';
+      else if (esNotaCredito) grupo = 'notasCreditoCompra';
+      else if (esNotaDebito) grupo = 'notasDebitoCompra';
+      else grupo = 'otrasCompras';
+    }
+
+    totales[grupo].cant += 1;
+    totales[grupo].neto += (d.neto || 0) * signo;
+    totales[grupo].iva += (d.iva || 0) * signo;
+    totales[grupo].total += (d.total || 0) * signo;
+  });
+
+  var ivaDebito = totales.facturasVenta.iva + totales.boletasVenta.iva
+                + totales.notasDebitoVenta.iva - totales.notasCreditoVenta.iva
+                + totales.otrasVentas.iva;
+
+  var ivaCredito = totales.facturasCompra.iva
+                 + totales.notasDebitoCompra.iva - totales.notasCreditoCompra.iva
+                 + totales.otrasCompras.iva;
+
+  var ivaDeterminado = ivaDebito - ivaCredito;
+
+  function fm(n) {
+    var v = Math.round(n || 0);
+    return '$' + v.toLocaleString('es-CL');
+  }
+  function fmd(n) {
+    var v = Math.round(n || 0);
+    if (v === 0) return '$0';
+    return (v > 0 ? '$' : '-$') + Math.abs(v).toLocaleString('es-CL');
+  }
+
+  var nombreMes = mesElegido;
+  try {
+    var partes = mesElegido.split('-');
+    var meses_nombre = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+    var numMes = parseInt(partes[1], 10) - 1;
+    if (numMes >= 0 && numMes <= 11) nombreMes = meses_nombre[numMes] + ' ' + partes[0];
+  } catch(e) {}
+
+  var resultado = ivaDeterminado > 0 ? 'IVA A PAGAR (referencial)' : (ivaDeterminado < 0 ? 'IVA A FAVOR (referencial)' : 'SIN DIFERENCIA DE IVA');
+  var colorResultado = ivaDeterminado > 0 ? '#a22' : (ivaDeterminado < 0 ? '#0a6b3d' : '#555');
+
+  var html = ''
+  + '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">'
+  + '<title>Reporte F29 — ' + nombreMes + '</title>'
+  + '<style>'
+  + 'body{font-family:Arial,sans-serif;padding:30px;background:#f5f7fa;color:#172033}'
+  + '.card{background:white;max-width:820px;margin:0 auto;border:1px solid #e1e6ef;border-radius:12px;padding:30px;box-shadow:0 2px 10px rgba(0,0,0,0.05)}'
+  + 'h1{margin:0 0 6px;font-size:1.5rem;color:#1e3a8a}'
+  + '.sub{color:#667085;margin-bottom:20px}'
+  + 'h2{font-size:1rem;background:#eef2f7;padding:8px 12px;border-radius:6px;margin:22px 0 10px;color:#172b4d}'
+  + 'table{width:100%;border-collapse:collapse;font-size:0.9rem}'
+  + 'td{padding:7px 10px;border-bottom:1px solid #eef2f7}'
+  + 'td:last-child{text-align:right;font-weight:600}'
+  + '.codigo{color:#2459a9;font-weight:600;display:inline-block;min-width:60px}'
+  + '.total td{background:#f3f4f6;border-top:2px solid #ccd5e2;font-weight:700}'
+  + '.resultado{font-size:1.15rem;text-align:center;padding:16px;border-radius:8px;background:#fffaf0;color:' + colorResultado + ';font-weight:700;margin-top:20px;border:1px solid #f0d9a8}'
+  + '.aviso{margin-top:20px;font-size:0.82rem;color:#a22;text-align:center;line-height:1.5}'
+  + '.acciones{margin:20px auto 0;max-width:820px;text-align:center}'
+  + 'button{padding:10px 20px;border:0;border-radius:8px;background:#2459a9;color:white;font-size:0.9rem;font-weight:600;cursor:pointer;margin:0 5px}'
+  + 'button.cerrar{background:#6b7280}'
+  + '@media print{.acciones{display:none}}'
+  + '</style></head><body>'
+  + '<div class="card">'
+  + '<h1>📄 Borrador F29 referencial</h1>'
+  + '<div class="sub">Período: <strong>' + nombreMes + '</strong> · Generado el ' + new Date().toLocaleDateString('es-CL') + ' · ' + filtrados.length + ' documentos</div>'
+
+  + '<h2>🔴 DÉBITOS FISCALES — Ventas</h2>'
+  + '<table>'
+  + '<tr><td><span class="codigo">503/502</span>Facturas emitidas (cantidad / IVA)</td><td>' + totales.facturasVenta.cant + ' / ' + fm(totales.facturasVenta.iva) + '</td></tr>'
+  + '<tr><td><span class="codigo">110/111</span>Boletas emitidas (cantidad / IVA)</td><td>' + totales.boletasVenta.cant + ' / ' + fm(totales.boletasVenta.iva) + '</td></tr>'
+  + '<tr><td><span class="codigo">509/510</span>Notas de crédito emitidas (cantidad / IVA)</td><td>' + totales.notasCreditoVenta.cant + ' / ' + fmd(totales.notasCreditoVenta.iva) + '</td></tr>'
+  + '<tr><td><span class="codigo">512/513</span>Notas de débito emitidas (cantidad / IVA)</td><td>' + totales.notasDebitoVenta.cant + ' / ' + fm(totales.notasDebitoVenta.iva) + '</td></tr>'
+  + (totales.otrasVentas.cant > 0 ? '<tr><td><span class="codigo">—</span>Otras ventas afectas (cantidad / IVA)</td><td>' + totales.otrasVentas.cant + ' / ' + fm(totales.otrasVentas.iva) + '</td></tr>' : '')
+  + '<tr class="total"><td>TOTAL IVA DÉBITO FISCAL</td><td>' + fm(ivaDebito) + '</td></tr>'
+  + '</table>'
+
+  + '<h2>🟢 CRÉDITOS FISCALES — Compras</h2>'
+  + '<table>'
+  + '<tr><td><span class="codigo">519/520</span>Facturas recibidas (cantidad / IVA)</td><td>' + totales.facturasCompra.cant + ' / ' + fm(totales.facturasCompra.iva) + '</td></tr>'
+  + '<tr><td><span class="codigo">527/528</span>Notas de crédito recibidas (cantidad / IVA)</td><td>' + totales.notasCreditoCompra.cant + ' / ' + fmd(totales.notasCreditoCompra.iva) + '</td></tr>'
+  + '<tr><td><span class="codigo">531/532</span>Notas de débito recibidas (cantidad / IVA)</td><td>' + totales.notasDebitoCompra.cant + ' / ' + fm(totales.notasDebitoCompra.iva) + '</td></tr>'
+  + (totales.otrasCompras.cant > 0 ? '<tr><td><span class="codigo">—</span>Otras compras afectas (cantidad / IVA)</td><td>' + totales.otrasCompras.cant + ' / ' + fm(totales.otrasCompras.iva) + '</td></tr>' : '')
+  + '<tr class="total"><td>TOTAL IVA CRÉDITO FISCAL</td><td>' + fm(ivaCredito) + '</td></tr>'
+  + '</table>'
+
+  + '<h2>⚖️ DETERMINACIÓN DEL IVA</h2>'
+  + '<table>'
+  + '<tr><td>IVA Débito Fiscal (ventas)</td><td>' + fm(ivaDebito) + '</td></tr>'
+  + '<tr><td>IVA Crédito Fiscal (compras)</td><td>-' + fm(ivaCredito) + '</td></tr>'
+  + '<tr class="total"><td><span class="codigo">89</span>IVA DETERMINADO DEL PERÍODO</td><td>' + fmd(ivaDeterminado) + '</td></tr>'
+  + '</table>'
+
+  + '<div class="resultado">' + resultado + '</div>'
+
+  + '<div class="aviso">⚠️ Este es un borrador referencial generado automáticamente por tu sistema.<br>'
+  + '<strong>NO reemplaza</strong> el Formulario 29 oficial del SII.<br>'
+  + 'Consulta siempre con tu contador antes de declarar.</div>'
+
+  + '</div>'
+  + '<div class="acciones">'
+  + '<button onclick="window.print()">🖨 Imprimir / Guardar PDF</button>'
+  + '<button class="cerrar" onclick="window.close()">Cerrar</button>'
+  + '</div>'
+  + '</body></html>';
+
+  var ventana = window.open('', '_blank');
+  if (!ventana) {
+    alert('Tu navegador bloqueó la ventana emergente. Por favor permite las ventanas emergentes para este sitio.');
+    return;
+  }
+  ventana.document.write(html);
+  ventana.document.close();
 }
 
 /* ===== ORDENAR POR COLUMNA ===== */
