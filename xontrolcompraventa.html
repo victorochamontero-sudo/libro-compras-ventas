@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mi Libro de Compras y Ventas — Chile V41</title>
+<title>Mi Libro de Compras y Ventas — Chile V58</title>
 <style>
   * { box-sizing: border-box; }
   body { font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; background: #f4f6f9; color: #1f2937; }
@@ -14,13 +14,10 @@
   
   .barra-modo { display: flex; align-items: center; gap: 12px; background: #fff7ed; border: 1px solid #fed7aa; border-radius: 10px; padding: 12px 18px; margin-bottom: 18px; font-size: 0.92rem; }
   .barra-modo label { display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 600; color: #9a3412; }
-  .barra-modo input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; }
-  .barra-modo .info { color: #7c2d12; font-size: 0.85rem; }
-
+  
   .tabs-nav { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 18px; }
   .tab-btn { padding: 11px 20px; font-size: 0.92rem; font-weight: 600; border-radius: 8px; background: #e5e7eb; color: #374151; border: none; cursor: pointer; transition: 0.15s; }
-  .tab-btn:hover { background: #d1d5db; }
-  .tab-btn.activa { background: #1e40af; color: white; box-shadow: 0 2px 6px rgba(30,64,175,0.3); }
+  .tab-btn.activa { background: #1e40af; color: white; }
   .tab-btn.compra.activa { background: #b91c1c; }
   .tab-btn.venta.activa { background: #059669; }
 
@@ -38,8 +35,8 @@
   .sugerencias { position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #d1d5db; border-radius: 0 0 6px 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.12); max-height: 200px; overflow-y: auto; z-index: 1000; display: none; }
   .sugerencias div { padding: 8px 12px; cursor: pointer; border-bottom: 1px solid #f3f4f6; font-size: 0.85rem; }
   .sugerencias div:hover { background: #eff6ff; }
-  .sugerencias .sug-rut { font-weight: 600; color: #1e3a8a; }
-  .sugerencias .sug-nombre { color: #4b5563; font-size: 0.8rem; }
+  .sug-rut { font-weight: 600; color: #1e3a8a; }
+  .sug-nombre { color: #4b5563; font-size: 0.8rem; }
 
   button { cursor: pointer; border: none; border-radius: 6px; padding: 9px 16px; font-size: 0.88rem; font-weight: 600; transition: 0.15s; }
   .btn-primary { background: #2563eb; color: white; }
@@ -58,7 +55,12 @@
 
   table { width: 100%; border-collapse: collapse; font-size: 0.83rem; }
   th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid #e5e7eb; }
-  th { background: #f3f4f6; font-weight: 600; color: #374151; position: sticky; top: 0; }
+  th { background: #f3f4f6; font-weight: 600; color: #374151; position: sticky; top: 0; user-select: none; }
+  th:hover { background: #e5e7eb; }
+  th.no-sort { cursor: default; }
+  th.no-sort:hover { background: #f3f4f6; }
+  th .sort-icon { font-size: 0.7rem; margin-left: 4px; color: #9ca3af; }
+  th[onclick] { cursor: pointer; }
   .table-wrap { overflow-x: auto; max-height: 500px; }
   
   .totales { display: flex; flex-wrap: wrap; gap: 20px; margin-top: 15px; padding: 15px; background: #eff6ff; border-radius: 8px; }
@@ -69,8 +71,6 @@
   .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 0.72rem; font-weight: 600; }
   .badge-compra { background: #fee2e2; color: #991b1b; }
   .badge-venta { background: #d1fae5; color: #065f46; }
-  .badge-nc { background: #fef3c7; color: #92400e; }
-  .badge-nd { background: #e0e7ff; color: #3730a3; }
   
   .hidden { display: none !important; }
   .msg { padding: 10px 15px; border-radius: 6px; margin-bottom: 10px; font-size: 0.88rem; }
@@ -78,10 +78,6 @@
   .msg-err { background: #fee2e2; color: #991b1b; }
   .zona-borrado { border-left: 4px solid #dc2626; }
   .zona-borrado h2 { color: #991b1b; }
-  
-  .explicacion-row td { background: #fef3c7; padding: 14px 18px; }
-  .explicacion-box { font-size: 0.85rem; color: #78350f; line-height: 1.6; }
-  .explicacion-box strong { color: #92400e; }
   
   @media print {
     header, .actions-bar, .filtros, button, .no-print, .zona-borrado, .barra-modo, .tabs-nav { display: none !important; }
@@ -94,14 +90,13 @@
 <body>
 <header>
   <h1>📘 Mi Libro de Compras y Ventas — Chile</h1>
-  <p>Versión 41 · F29 Formato SII · Autocompletado · Formas de pago</p>
+  <p>Versión 58 · Respaldo Excel · PDF Libros · Ordenar Columnas</p>
 </header>
 
 <div class="container">
-
   <div class="barra-modo no-print">
     <label><input type="checkbox" id="modoEstudiante" onchange="toggleModoEstudiante()"> 🎓 Modo estudiante</label>
-    <span class="info">Actívalo para ver explicaciones contables de cada documento</span>
+    <span class="info">Actívalo para ver explicaciones contables</span>
   </div>
 
   <div class="tabs-nav no-print">
@@ -111,7 +106,6 @@
     <button class="tab-btn" data-vista="resumen" onclick="cambiarVista('resumen')">📊 Resumen</button>
   </div>
 
-  <!-- VISTA REGISTRAR -->
   <div id="vista-registrar">
     <div class="card no-print">
       <h2 id="form-titulo">Registrar documento</h2>
@@ -152,7 +146,7 @@
         <div><label>Hasta</label><input type="date" id="f-hasta" oninput="render()"></div>
         <div><label>Tipo</label><select id="f-tipo" onchange="render()"><option value="">Todos</option><option value="compra">Compra</option><option value="venta">Venta</option></select></div>
         <div><label>Tipo de documento</label><select id="f-tipoDoc" onchange="render()"><option value="">Todos</option></select></div>
-        <div style="grid-column: span 2;"><label>Buscar</label><input type="text" id="f-texto" placeholder="Escribe para buscar..." oninput="render()"></div>
+        <div style="grid-column: span 2;"><label>Buscar</label><input type="text" id="f-texto" placeholder="Escribe nombre, RUT o folio..." oninput="render()"></div>
         <div><label>&nbsp;</label><button class="btn-secondary" onclick="limpiarFiltros()">Limpiar filtros</button></div>
       </div>
     </div>
@@ -161,76 +155,88 @@
       <h2>📑 Documentos registrados</h2>
       <div class="table-wrap">
         <table id="tabla-principal">
-          <thead><tr><th>Tipo</th><th>Tipo Doc.</th><th>Fecha</th><th>Folio</th><th>RUT</th><th>Nombre</th><th>Neto</th><th>Exento</th><th>IVA</th><th>Total</th><th>Pago/Cobro</th><th>Observaciones</th><th class="no-print">Acciones</th></tr></thead>
+          <thead><tr>
+            <th class="no-sort">Tipo</th><th class="no-sort">Tipo Doc.</th><th class="no-sort">Fecha</th><th class="no-sort">Folio</th><th class="no-sort">RUT</th><th class="no-sort">Nombre</th><th class="no-sort">Neto</th><th class="no-sort">Exento</th><th class="no-sort">IVA</th><th class="no-sort">Total</th><th class="no-sort">Pago/Cobro</th><th class="no-sort">Observaciones</th><th class="no-print no-sort">Acciones</th>
+          </tr></thead>
           <tbody id="tbody-principal"></tbody>
         </table>
       </div>
       <div class="totales" id="totales-principal"></div>
       <div class="actions-bar no-print" style="margin-top:15px;">
-        <button class="btn-success" onclick="exportarCSV()">📤 Exportar CSV</button>
-        <button class="btn-primary" onclick="descargarRespaldo()">💾 Descargar respaldo JSON</button>
-        <button class="btn-secondary" onclick="document.getElementById('file-respaldo').click()">📥 Restaurar respaldo</button>
-        <input type="file" id="file-respaldo" accept=".json" class="hidden" onchange="restaurarRespaldo(event)">
-        <button class="btn-secondary" onclick="imprimirTablaPrincipal()">🖨 Imprimir Todos los Documentos</button>
+        <button class="btn-success" onclick="exportarCSV()">📤 Descargar Respaldo (Excel)</button>
+        <button class="btn-secondary" onclick="document.getElementById('file-respaldo').click()">📥 Restaurar desde Excel</button>
+        <input type="file" id="file-respaldo" accept=".csv" class="hidden" onchange="restaurarRespaldo(event)">
+        <button class="btn-secondary" onclick="imprimirTablaPrincipal()">🖨 Imprimir Documentos</button>
         <button class="btn-primary" onclick="reporteF29()">📄 Reporte F29</button>
       </div>
     </div>
 
     <div class="card no-print zona-borrado">
       <h2>🧨 Zona de borrado</h2>
-      <p style="font-size:0.85rem;color:#6b7280;margin-top:0;">Estas acciones son irreversibles. Descarga un respaldo antes de usarlas.</p>
       <div class="actions-bar">
-        <button class="btn-danger" onclick="borrarSoloDocumentos()">🗑 Borrar documentos registrados</button>
-        <button class="btn-danger" onclick="borrarTodo()">🧨 Borrar TODO (documentos + terceros + config)</button>
+        <button class="btn-danger" onclick="borrarSoloDocumentos()">🗑 Borrar documentos</button>
+        <button class="btn-danger" onclick="borrarTodo()">🧨 Borrar TODO</button>
       </div>
     </div>
   </div>
 
-  <!-- VISTA LIBRO COMPRAS -->
   <div id="vista-libro-compras" class="hidden">
     <div class="card libro-compras">
       <h2>📘 LIBRO DE COMPRAS</h2>
-      <div class="table-wrap"><table><thead><tr><th>Tipo Doc.</th><th>Fecha</th><th>Folio</th><th>RUT</th><th>Proveedor</th><th>Neto</th><th>Exento</th><th>IVA</th><th>Total</th><th>Pago</th><th class="no-print">Acciones</th></tr></thead><tbody id="tbody-compras"></tbody></table></div>
+      <div class="table-wrap">
+        <table id="tabla-compras">
+          <thead><tr>
+            <th onclick="sortLibro('c','tipoDoc')">Doc <span class="sort-icon">↕</span></th><th onclick="sortLibro('c','fecha')">Fecha <span class="sort-icon">↕</span></th><th onclick="sortLibro('c','folio')">Folio <span class="sort-icon">↕</span></th><th>RUT</th><th onclick="sortLibro('c','nombre')">Proveedor <span class="sort-icon">↕</span></th><th>Neto</th><th>Exento</th><th>IVA</th><th onclick="sortLibro('c','total')">Total <span class="sort-icon">↕</span></th><th>Pago</th><th class="no-print">Acciones</th>
+          </tr></thead>
+          <tbody id="tbody-compras"></tbody>
+        </table>
+      </div>
       <div class="totales libro-compras" id="totales-compras"></div>
-      <div class="actions-bar no-print"><button class="btn-secondary" onclick="imprimirLibro('compras')">🖨 Imprimir Libro de Compras</button></div>
+      <div class="actions-bar no-print"><button class="btn-primary" onclick="imprimirLibro('compras')">📄 Guardar PDF / Imprimir Compras</button></div>
     </div>
   </div>
 
-  <!-- VISTA LIBRO VENTAS -->
   <div id="vista-libro-ventas" class="hidden">
     <div class="card libro-ventas">
       <h2>📗 LIBRO DE VENTAS</h2>
-      <div class="table-wrap"><table><thead><tr><th>Tipo Doc.</th><th>Fecha</th><th>Folio</th><th>RUT</th><th>Cliente</th><th>Neto</th><th>Exento</th><th>IVA</th><th>Total</th><th>Cobro</th><th class="no-print">Acciones</th></tr></thead><tbody id="tbody-ventas"></tbody></table></div>
+      <div class="table-wrap">
+        <table id="tabla-ventas">
+          <thead><tr>
+            <th onclick="sortLibro('v','tipoDoc')">Doc <span class="sort-icon">↕</span></th><th onclick="sortLibro('v','fecha')">Fecha <span class="sort-icon">↕</span></th><th onclick="sortLibro('v','folio')">Folio <span class="sort-icon">↕</span></th><th>RUT</th><th onclick="sortLibro('v','nombre')">Cliente <span class="sort-icon">↕</span></th><th>Neto</th><th>Exento</th><th>IVA</th><th onclick="sortLibro('v','total')">Total <span class="sort-icon">↕</span></th><th>Pago</th><th class="no-print">Acciones</th>
+          </tr></thead>
+          <tbody id="tbody-ventas"></tbody>
+        </table>
+      </div>
       <div class="totales libro-ventas" id="totales-ventas"></div>
-      <div class="actions-bar no-print"><button class="btn-secondary" onclick="imprimirLibro('ventas')">🖨 Imprimir Libro de Ventas</button></div>
+      <div class="actions-bar no-print"><button class="btn-primary" onclick="imprimirLibro('ventas')">📄 Guardar PDF / Imprimir Ventas</button></div>
     </div>
   </div>
 
-  <!-- VISTA RESUMEN -->
   <div id="vista-resumen" class="hidden">
     <div class="card">
       <h2>📊 Resumen Mensual</h2>
-      <div class="table-wrap"><table><thead><tr><th>Mes</th><th>Compras (Total)</th><th>IVA Crédito</th><th>Ventas (Total)</th><th>IVA Débito</th><th>Diferencia IVA</th></tr></thead><tbody id="tbody-resumen"></tbody></table></div>
+      <div class="table-wrap"><table><thead><tr><th class="no-sort">Mes</th><th class="no-sort">Compras (Total)</th><th class="no-sort">IVA Crédito</th><th class="no-sort">Ventas (Total)</th><th class="no-sort">IVA Débito</th><th class="no-sort">Diferencia IVA</th></tr></thead><tbody id="tbody-resumen"></tbody></table></div>
     </div>
   </div>
 </div>
-
 <script>
 const TIPOS = {
   compra: ['Factura Electrónica', 'Factura No Electrónica', 'Boleta', 'Nota de Crédito', 'Nota de Débito', 'Factura de Compra', 'Importación', 'Otro'],
   venta: ['Factura Electrónica', 'Boleta Electrónica', 'Boleta', 'Nota de Crédito', 'Nota de Débito', 'Otro']
 };
-let documentos = JSON.parse(localStorage.getItem('libro_v41')) || [];
-let terceros = JSON.parse(localStorage.getItem('terceros_v41')) || [];
+let documentos = JSON.parse(localStorage.getItem('libro_v58')) || [];
+let terceros = JSON.parse(localStorage.getItem('terceros_v58')) || [];
 let editandoId = null;
 let modoEstudianteActivo = false;
+let sortC = { campo: 'fecha', dir: 1 };
+let sortV = { campo: 'fecha', dir: 1 };
 
 const fmt = n => '$' + Number(n || 0).toLocaleString('es-CL');
 const hoy = () => new Date().toISOString().slice(0,10);
 
 function guardarTodo() {
-  localStorage.setItem('libro_v41', JSON.stringify(documentos));
-  localStorage.setItem('terceros_v41', JSON.stringify(terceros));
+  localStorage.setItem('libro_v58', JSON.stringify(documentos));
+  localStorage.setItem('terceros_v58', JSON.stringify(terceros));
 }
 
 function mostrarMsg(txt, esError) {
@@ -430,23 +436,34 @@ function explicarDocumento(d) {
     cta = '<li>Clientes/Caja (Activo) por Total.</li><li>Ventas (Ingreso) por Neto.</li>' + (!esB ? '<li>IVA Débito (Pasivo) por IVA.</li>' : '');
     asiento = `Debe: Clientes ${fmt(d.total)}<br>Haber: Ventas ${fmt(d.neto)}<br>` + (!esB && d.iva>0 ? `Haber: IVA Débito ${fmt(d.iva)}` : '');
   }
-  return `<div class="explicacion-box"><b>📘 ¿Qué es?</b> ${d.tipoDoc}. ${esB?'Las boletas no dan crédito fiscal.':'Documento tributario.'}<br><br><b>📊 Cuentas afectadas:</b><ul>${cta}</ul><b>📖 Asiento Contable:</b><br>${asiento}</div>`;
+  return `<div style="background:#fef3c7;padding:14px;border-radius:6px;"><b>📘 ¿Qué es?</b> ${d.tipoDoc}. ${esB?'Las boletas no dan crédito fiscal.':'Documento tributario.'}<br><br><b>📊 Cuentas afectadas:</b><ul>${cta}</ul><b>📖 Asiento Contable:</b><br>${asiento}</div>`;
 }
 function toggleExplica(id) {
-  document.getElementById('explica-' + id).classList.toggle('hidden');
+  document.getElementById(id).classList.toggle('hidden');
 }
 
+function sortLibro(tipo, campo) {
+  if(tipo === 'c') {
+    if(sortC.campo === campo) sortC.dir *= -1;
+    else { sortC.campo = campo; sortC.dir = 1; }
+  } else {
+    if(sortV.campo === campo) sortV.dir *= -1;
+    else { sortV.campo = campo; sortV.dir = 1; }
+  }
+  render();
+}
 function render() {
   const selFiltro = document.getElementById('f-tipoDoc');
   if(selFiltro.options.length <= 1) {
     const todos = [...new Set([...TIPOS.compra, ...TIPOS.venta])].sort();
     selFiltro.innerHTML = '<option value="">Todos</option>' + todos.map(t => `<option value="${t}">${t}</option>`).join('');
   }
+  
   const fDesde = document.getElementById('f-desde').value;
   const fHasta = document.getElementById('f-hasta').value;
   const fTipo = document.getElementById('f-tipo').value;
-  const fDoc = document.getElementById('f-tipoDoc').value;
-  const fTexto = document.getElementById('f-texto').value.toLowerCase();
+  const fDoc = document.getElementById('f-tipoDoc').value;  const fTexto = document.getElementById('f-texto').value.toLowerCase();
+  
   const filtrados = documentos.filter(d => {
     if (fDesde && d.fecha < fDesde) return false;
     if (fHasta && d.fecha > fHasta) return false;
@@ -461,30 +478,38 @@ function render() {
     tP += d.total; nP += d.neto; eP += d.exento; iP += d.iva;
     let btnInfo = modoEstudianteActivo ? `<button class="btn-info btn-sm" onclick="toggleExplica('${d.id}')">ℹ️</button> ` : '';
     let badge = d.tipo === 'compra' ? 'badge-compra' : 'badge-venta';
-    hP += `<tr><td><span class="badge ${badge}">${d.tipo === 'compra' ? 'Compra' : 'Venta'}</span</span></td><td>${d.tipoDoc}</td><td>${d.fecha}</td><td>${d.folio}</td><td>${d.rut || '—'}</td><td>${d.nombre || '—'}</td><td>${fmt(d.neto)}</td><td>${fmt(d.exento)}</td><td>${fmt(d.iva)}</td><td><b>${fmt(d.total)}</b></td><td>${d.pago || '—'}</td><td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${d.observaciones}">${d.observaciones || '—'}</td><td class="no-print">${btnInfo}<button class="btn-primary btn-sm" onclick="editarDoc('${d.id}')">✏️</button> <button class="btn-danger btn-sm" onclick="borrarDoc('${d.id}')">🗑</button></td></tr>`;
-    if(modoEstudianteActivo) hP += `<tr id="explica-${d.id}" class="explicacion-row hidden"><td colspan="13">${explicarDocumento(d)}</td></tr>`;
+    hP += `<tr><td><span class="badge ${badge}">${d.tipo === 'compra' ? 'Compra' : 'Venta'}</span></td><td>${d.tipoDoc}</td><td>${d.fecha}</td><td>${d.folio}</td><td>${d.rut || '—'}</td><td>${d.nombre || '—'}</td><td>${fmt(d.neto)}</td><td>${fmt(d.exento)}</td><td>${fmt(d.iva)}</td><td><b>${fmt(d.total)}</b></td><td>${d.pago || '—'}</td><td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${d.observaciones}">${d.observaciones || '—'}</td><td class="no-print">${btnInfo}<button class="btn-primary btn-sm" onclick="editarDoc('${d.id}')">✏️</button> <button class="btn-danger btn-sm" onclick="borrarDoc('${d.id}')">🗑</button></td></tr>`;
+    if(modoEstudianteActivo) hP += `<tr id="explica-${d.id}" class="hidden"><td colspan="13">${explicarDocumento(d)}</td></tr>`;
   });
   document.getElementById('tbody-principal').innerHTML = hP || '<tr><td colspan="13" style="text-align:center;">No hay documentos.</td></tr>';
   document.getElementById('totales-principal').innerHTML = `<div><b>Docs:</b> ${filtrados.length}</div><div><b>Neto:</b> ${fmt(nP)}</div><div><b>Exento:</b> ${fmt(eP)}</div><div><b>IVA:</b> ${fmt(iP)}</div><div><b>Total:</b> ${fmt(tP)}</div>`;
 
-  const compras = documentos.filter(d => d.tipo === 'compra').sort((a,b) => a.fecha.localeCompare(b.fecha) || a.nombre.localeCompare(b.nombre) || String(a.folio).localeCompare(String(b.folio)));
+  const compras = documentos.filter(d => d.tipo === 'compra').sort((a,b) => {
+    let va = a[sortC.campo], vb = b[sortC.campo];
+    if(typeof va === 'string') return va.localeCompare(vb) * sortC.dir;
+    return (va - vb) * sortC.dir;
+  });
   let hC = '', tC=0, nC=0, eC=0, iC=0;
   compras.forEach(d => {
     tC += d.total; nC += d.neto; eC += d.exento; iC += d.iva;
     let btnInfo = modoEstudianteActivo ? `<button class="btn-info btn-sm" onclick="toggleExplica('c${d.id}')">ℹ️</button> ` : '';
     hC += `<tr><td>${d.tipoDoc}</td><td>${d.fecha}</td><td>${d.folio}</td><td>${d.rut}</td><td>${d.nombre}</td><td>${fmt(d.neto)}</td><td>${fmt(d.exento)}</td><td>${fmt(d.iva)}</td><td><b>${fmt(d.total)}</b></td><td>${d.pago || '—'}</td><td class="no-print">${btnInfo}<button class="btn-primary btn-sm" onclick="editarDoc('${d.id}')">✏️</button> <button class="btn-danger btn-sm" onclick="borrarDoc('${d.id}')">🗑</button></td></tr>`;
-    if(modoEstudianteActivo) hC += `<tr id="explica-c${d.id}" class="explicacion-row hidden"><td colspan="11">${explicarDocumento(d)}</td></tr>`;
+    if(modoEstudianteActivo) hC += `<tr id="explica-c${d.id}" class="hidden"><td colspan="11">${explicarDocumento(d)}</td></tr>`;
   });
   document.getElementById('tbody-compras').innerHTML = hC || '<tr><td colspan="11" style="text-align:center;">No hay compras.</td></tr>';
   document.getElementById('totales-compras').innerHTML = `<div><b>Docs:</b> ${compras.length}</div><div><b>Neto:</b> ${fmt(nC)}</div><div><b>Exento:</b> ${fmt(eC)}</div><div><b>IVA:</b> ${fmt(iC)}</div><div><b>Total:</b> ${fmt(tC)}</div>`;
 
-  const ventas = documentos.filter(d => d.tipo === 'venta').sort((a,b) => a.fecha.localeCompare(b.fecha) || String(a.folio).localeCompare(String(b.folio)));
+  const ventas = documentos.filter(d => d.tipo === 'venta').sort((a,b) => {
+    let va = a[sortV.campo], vb = b[sortV.campo];
+    if(typeof va === 'string') return va.localeCompare(vb) * sortV.dir;
+    return (va - vb) * sortV.dir;
+  });
   let hV = '', tV=0, nV=0, eV=0, iV=0;
   ventas.forEach(d => {
     tV += d.total; nV += d.neto; eV += d.exento; iV += d.iva;
     let btnInfo = modoEstudianteActivo ? `<button class="btn-info btn-sm" onclick="toggleExplica('v${d.id}')">ℹ️</button> ` : '';
     hV += `<tr><td>${d.tipoDoc}</td><td>${d.fecha}</td><td>${d.folio}</td><td>${d.rut}</td><td>${d.nombre}</td><td>${fmt(d.neto)}</td><td>${fmt(d.exento)}</td><td>${fmt(d.iva)}</td><td><b>${fmt(d.total)}</b></td><td>${d.pago || '—'}</td><td class="no-print">${btnInfo}<button class="btn-primary btn-sm" onclick="editarDoc('${d.id}')">✏️</button> <button class="btn-danger btn-sm" onclick="borrarDoc('${d.id}')">🗑</button></td></tr>`;
-    if(modoEstudianteActivo) hV += `<tr id="explica-v${d.id}" class="explicacion-row hidden"><td colspan="11">${explicarDocumento(d)}</td></tr>`;
+    if(modoEstudianteActivo) hV += `<tr id="explica-v${d.id}" class="hidden"><td colspan="11">${explicarDocumento(d)}</td></tr>`;
   });
   document.getElementById('tbody-ventas').innerHTML = hV || '<tr><td colspan="11" style="text-align:center;">No hay ventas.</td></tr>';
   document.getElementById('totales-ventas').innerHTML = `<div><b>Docs:</b> ${ventas.length}</div><div><b>Neto:</b> ${fmt(nV)}</div><div><b>Exento:</b> ${fmt(eV)}</div><div><b>IVA:</b> ${fmt(iV)}</div><div><b>Total:</b> ${fmt(tV)}</div>`;
@@ -516,15 +541,9 @@ function exportarCSV() {
     csv += `${d.tipo};${d.tipoDoc};${d.fecha};${d.folio};${d.rut};${d.nombre};${d.neto};${d.exento};${d.iva};${d.total};${d.pago};${d.observaciones}\n`;
   });
   const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob(['\uFEFF'+csv], {type:'text/csv'}));
-  a.download = 'libro.csv';
+  a.href = URL.createObjectURL(new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8'}));
+  a.download = 'respaldo_libro.csv';
   a.click();
-}
-
-function descargarRespaldo() {
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([JSON.stringify(documentos, null, 2)], {type: 'application/json'}));
-  a.download = 'respaldo.json'; a.click();
 }
 
 function restaurarRespaldo(ev) {
@@ -533,14 +552,28 @@ function restaurarRespaldo(ev) {
   const reader = new FileReader();
   reader.onload = e => {
     try {
-      const data = JSON.parse(e.target.result);
-      if(Array.isArray(data)) {
-        documentos = data;
-        guardarTodo();
-        render();
-        alert('Respaldo restaurado.');
-      }
-    } catch(err) { alert('Error al restaurar.'); }
+      let lines = e.target.result.split('\n').filter(l => l.trim() !== '' && !l.startsWith('Tipo;'));
+      let arr = [];
+      lines.forEach(l => {
+        let c = l.split(';').map(x => x.replace(/^"|"$/g, '').trim());
+        if (c.length >= 10) {
+          arr.push({
+            id: Date.now().toString() + Math.random().toString().slice(2,6),
+            tipo: c[0], tipoDoc: c[1], fecha: c[2], folio: c[3], rut: c[4], nombre: c[5],
+            neto: parseFloat(c[6])||0, exento: parseFloat(c[7])||0, iva: parseFloat(c[8])||0, total: parseFloat(c[9])||0,
+            pago: c[10]||'Contado', observaciones: c[11]||''
+          });
+        }
+      });
+      if(arr.length > 0) {
+        if(confirm('Se cargarán ' + arr.length + ' documentos. ¿Reemplazar los actuales?')) {
+          documentos = arr;
+          guardarTodo();
+          render();
+          alert('✅ Respaldo restaurado exitosamente');
+        }
+      } else { alert('El archivo está vacío o no tiene el formato correcto.'); }
+    } catch(err) { alert('Error al leer el archivo.'); }
   };
   reader.readAsText(file);
   ev.target.value = '';
@@ -548,11 +581,10 @@ function restaurarRespaldo(ev) {
 
 function borrarSoloDocumentos() {
   if (documentos.length === 0) return alert('No hay documentos registrados.');
-  if (confirm('⚠️ Se eliminarán TODOS los documentos (' + documentos.length + ').\n\nEl catálogo de RUTs y Nombres se conservará.\n\n¿Continuar?')) {
+  if (confirm('⚠️ Se eliminarán TODOS los documentos. El catálogo de RUTs se conservará. ¿Continuar?')) {
     documentos = [];
     guardarTodo();
     render();
-    alert('✅ Documentos borrados. El catálogo de RUT/nombres se mantiene.');
   }
 }
 
@@ -568,19 +600,13 @@ function borrarTodo() {
 
 function reporteF29() {
   if(documentos.length === 0) return alert('No hay datos para el reporte.');
-
   let meses = {};
   documentos.forEach(d => {
     if(!d.fecha) return;
     let m = d.fecha.slice(0,7);
-    if(!meses[m]) meses[m] = { 
-      facV:0, bolV:0, ncV:0, ndV:0, 
-      facC:0, ncC:0, ndC:0, 
-      ivaV:0, ivaC:0 
-    };
+    if(!meses[m]) meses[m] = { facV:0, bolV:0, ncV:0, ndV:0, facC:0, ncC:0, ndC:0, ivaV:0, ivaC:0 };
     let signo = d.tipoDoc.includes('Crédito') ? -1 : 1;
     let iva = d.iva || 0;
-    
     if(d.tipo === 'venta') {
       meses[m].ivaV += iva * signo;
       if(d.tipoDoc.includes('Factura')) meses[m].facV += iva * signo;
@@ -595,47 +621,7 @@ function reporteF29() {
     }
   });
 
-  let html = `
-  <!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>F29 - Referencial</title>
-  <style>
-    body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f4f6f9; color: #1f2937; padding: 30px; margin: 0; }
-    .container { max-width: 800px; margin: 0 auto; background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-    h1 { color: #1e3a8a; font-size: 1.5rem; margin-top: 0; display: flex; align-items: center; gap: 10px; }
-    .sub { color: #6b7280; font-size: 0.9rem; margin-bottom: 30px; }
-    
-    .bloque { margin-bottom: 25px; }
-    .bloque-titulo { background: #eef2f7; color: #1e3a8a; padding: 8px 15px; border-radius: 6px; font-weight: bold; font-size: 0.95rem; display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
-    .bloque-titulo.rojo { color: #991b1b; background: #fef2f2; }
-    .bloque-titulo.verde { color: #065f46; background: #ecfdf5; }
-    .bloque-titulo.gris { color: #374151; background: #f3f4f6; }
-    
-    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin-bottom: 15px; }
-    td { padding: 8px 10px; border-bottom: 1px solid #e5e7eb; }
-    td:last-child { text-align: right; font-weight: bold; color: #374151; }
-    .codigo { color: #2563eb; font-weight: 600; display: inline-block; width: 60px; font-size: 0.8rem; }
-    .fila-total td { background: #f9fafb; border-top: 2px solid #d1d5db; border-bottom: none; font-size: 1rem; }
-    .fila-total td:last-child { color: #111827; font-weight: 800; }
-    
-    .resultado { text-align: center; padding: 20px; border-radius: 8px; margin-top: 20px; border: 2px solid; }
-    .resultado.pagar { background: #fffaf0; border-color: #f0d9a8; color: #b45309; }
-    .resultado.favor { background: #ecfdf5; border-color: #10b981; color: #047857; }
-    .resultado.igual { background: #f3f4f6; border-color: #9ca3af; color: #4b5563; }
-    .resultado h2 { margin: 0; font-size: 1.2rem; text-transform: uppercase; letter-spacing: 1px; }
-    .resultado .monto { font-size: 2rem; font-weight: 900; margin-top: 10px; }
-    
-    .aviso { margin-top: 30px; font-size: 0.8rem; color: #dc2626; text-align: center; line-height: 1.5; border-top: 1px solid #e5e7eb; padding-top: 20px; }
-    .acciones { text-align: center; margin-top: 20px; }
-    .btn { padding: 10px 20px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; color: white; margin: 0 5px; }
-    .btn-azul { background: #2563eb; }
-    .btn-gris { background: #6b7280; }
-    
-    @media print { 
-      body { background: white; padding: 0; } 
-      .container { box-shadow: none; padding: 0; } 
-      .acciones { display: none; } 
-    }
-  </style></head><body><div class="container">
-  `;
+  let html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>F29</title><style>body{font-family:sans-serif;background:#f4f6f9;padding:30px}.c{max-width:800px;margin:0 auto;background:#fff;padding:40px;border-radius:12px;box-shadow:0 4px 15px rgba(0,0,0,.1)}h1{color:#1e3a8a;border-bottom:3px solid #1e3a8a;padding-bottom:10px;font-size:1.5rem}.sub{color:#6b7280;font-size:.9rem;margin-bottom:30px}.bl{margin-bottom:25px}.bt{background:#eef2f7;color:#1e3a8a;padding:8px 15px;border-radius:6px;font-weight:bold;font-size:.95rem;display:flex;align-items:center;gap:8px;margin-bottom:10px}.bt.r{color:#991b1b;background:#fef2f2}.bt.v{color:#065f46;background:#ecfdf5}.bt.g{color:#374151;background:#f3f4f6}table{width:100%;border-collapse:collapse;font-size:.9rem;margin-bottom:15px}td{padding:8px 10px;border-bottom:1px solid #e5e7eb}td:last-child{text-align:right;font-weight:bold;color:#374151}.cod{color:#2563eb;font-weight:600;display:inline-block;width:60px;font-size:.8rem}.tot td{background:#f9fafb;border-top:2px solid #d1d5db;border-bottom:none;font-size:1rem}.tot td:last-child{color:#111827;font-weight:800}.res{text-align:center;padding:20px;border-radius:8px;margin-top:20px;border:2px solid}.pagar{background:#fffaf0;border-color:#f0d9a8;color:#b45309}.favor{background:#ecfdf5;border-color:#10b981;color:#047857}.igual{background:#f3f4f6;border-color:#9ca3af;color:#4b5563}.res h2{margin:0;font-size:1.2rem;text-transform:uppercase;letter-spacing:1px}.monto{font-size:2rem;font-weight:900;margin-top:10px}.aviso{margin-top:30px;font-size:.8rem;color:#dc2626;text-align:center;line-height:1.5;border-top:1px solid #e5e7eb;padding-top:20px}.acc{text-align:center;margin-top:20px}.btn{padding:10px 20px;border:none;border-radius:6px;font-weight:bold;cursor:pointer;color:white;margin:0 5px}.azul{background:#2563eb}.gris{background:#6b7280}@media print{body{background:#fff;padding:0}.c{box-shadow:none;padding:0}.acc{display:none}}</style></head><body><div class="c">`;
 
   Object.keys(meses).sort().reverse().forEach(m => {
     let x = meses[m];
@@ -643,95 +629,65 @@ function reporteF29() {
     let esPagar = dif > 0;
     let esFavor = dif < 0;
     let nombreMes = m;
-    try {
-      let p = m.split('-');
-      let mn = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-      nombreMes = mn[parseInt(p[1])-1] + ' ' + p[0];
-    } catch(e){}
-
-    html += `
-      <div style="page-break-inside: avoid; margin-bottom: 50px;">
-        <h1>📄 Borrador F29 referencial</h1>
-        <div class="sub">Período: <strong>${nombreMes}</strong></div>
-
-        <div class="bloque">
-          <div class="bloque-titulo rojo">🔴 DÉBITOS FISCALES — Ventas</div>
-          <table>
-            <tr><td><span class="codigo">503/502</span> Facturas emitidas</td><td>${fmt(x.facV)}</td></tr>
-            <tr><td><span class="codigo">110/111</span> Boletas emitidas</td><td>${fmt(x.bolV)}</td></tr>
-            <tr><td><span class="codigo">509/510</span> Notas de crédito</td><td>${fmt(x.ncV)}</td></tr>
-            <tr><td><span class="codigo">512/513</span> Notas de débito</td><td>${fmt(x.ndV)}</td></tr>
-            <tr class="fila-total"><td><strong>TOTAL IVA DÉBITO FISCAL</strong></td><td>${fmt(x.ivaV)}</td></tr>
-          </table>
-        </div>
-
-        <div class="bloque">
-          <div class="bloque-titulo verde">🟢 CRÉDITOS FISCALES — Compras</div>
-          <table>
-            <tr><td><span class="codigo">519/520</span> Facturas recibidas</td><td>${fmt(x.facC)}</td></tr>
-            <tr><td><span class="codigo">527/528</span> Notas de crédito</td><td>${fmt(x.ncC)}</td></tr>
-            <tr><td><span class="codigo">531/532</span> Notas de débito</td><td>${fmt(x.ndC)}</td></tr>
-            <tr class="fila-total"><td><strong>TOTAL IVA CRÉDITO FISCAL</strong></td><td>${fmt(x.ivaC)}</td></tr>
-          </table>
-        </div>
-
-        <div class="bloque">
-          <div class="bloque-titulo gris">⚖️ DETERMINACIÓN DEL IVA</div>
-          <table>
-            <tr><td>IVA Débito Fiscal</td><td>${fmt(x.ivaV)}</td></tr>
-            <tr><td>IVA Crédito Fiscal</td><td>-${fmt(x.ivaC)}</td></tr>
-            <tr class="fila-total"><td><span class="codigo">89</span> <strong>IVA DETERMINADO</strong></td><td>${fmt(dif)}</td></tr>
-          </table>
-        </div>
-
-        <div class="resultado ${esPagar ? 'pagar' : (esFavor ? 'favor' : 'igual')}">
-          <h2>${esPagar ? 'IVA A PAGAR (referencial)' : (esFavor ? 'IVA A FAVOR (referencial)' : 'SIN DIFERENCIA')}</h2>
-          <div class="monto">${fmt(Math.abs(dif))}</div>
-        </div>
-      </div>
-    `;
+    try { let p = m.split('-'); let mn = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']; nombreMes = mn[parseInt(p[1])-1] + ' ' + p[0]; } catch(e){}
+    html += `<div style="page-break-inside:avoid;margin-bottom:50px"><h1>📄 Borrador F29 referencial</h1><div class="sub">Período: <strong>${nombreMes}</strong></div><div class="bl"><div class="bt r">🔴 DÉBITOS FISCALES — Ventas</div><table><tr><td><span class="cod">503/502</span> Facturas emitidas</td><td>${fmt(x.facV)}</td></tr><tr><td><span class="cod">110/111</span> Boletas emitidas</td><td>${fmt(x.bolV)}</td></tr><tr><td><span class="cod">509/510</span> Notas de crédito</td><td>${fmt(x.ncV)}</td></tr><tr><td><span class="cod">512/513</span> Notas de débito</td><td>${fmt(x.ndV)}</td></tr><tr class="tot"><td><strong>TOTAL IVA DÉBITO FISCAL</strong></td><td>${fmt(x.ivaV)}</td></tr></table></div><div class="bl"><div class="bt v">🟢 CRÉDITOS FISCALES — Compras</div><table><tr><td><span class="cod">519/520</span> Facturas recibidas</td><td>${fmt(x.facC)}</td></tr><tr><td><span class="cod">527/528</span> Notas de crédito</td><td>${fmt(x.ncC)}</td></tr><tr><td><span class="cod">531/532</span> Notas de débito</td><td>${fmt(x.ndC)}</td></tr><tr class="tot"><td><strong>TOTAL IVA CRÉDITO FISCAL</strong></td><td>${fmt(x.ivaC)}</td></tr></table></div><div class="bl"><div class="bt g">⚖️ DETERMINACIÓN DEL IVA</div><table><tr><td>IVA Débito Fiscal</td><td>${fmt(x.ivaV)}</td></tr><tr><td>IVA Crédito Fiscal</td><td>-${fmt(x.ivaC)}</td></tr><tr class="tot"><td><span class="cod">89</span> <strong>IVA DETERMINADO</strong></td><td>${fmt(dif)}</td></tr></table></div><div class="res ${esPagar?'pagar':(esFavor?'favor':'igual')}"><h2>${esPagar?'IVA A PAGAR (referencial)':(esFavor?'IVA A FAVOR (referencial)':'SIN DIFERENCIA')}</h2><div class="monto">${fmt(Math.abs(dif))}</div></div></div>`;
   });
-
-  html += `
-      <div class="aviso">
-        ⚠️ Borrador referencial. NO reemplaza el F29 oficial del SII. Consulta a tu contador.
-      </div>
-      <div class="acciones">
-        <button class="btn btn-azul" onclick="window.print()">🖨 Imprimir / Guardar PDF</button>
-        <button class="btn btn-gris" onclick="window.close()">Cerrar</button>
-      </div>
-    </div>
-  </body></html>`;
-
-  const w = window.open('', '_blank');
+  html += `<div class="aviso">⚠️ Borrador referencial. NO reemplaza el F29 oficial del SII. Consulta a tu contador.</div><div class="acc"><button class="btn azul" onclick="window.print()">🖨 Imprimir / Guardar PDF</button><button class="btn gris" onclick="window.close()">Cerrar</button></div></div></body></html>`;
+  let w = window.open('', '_blank');
   w.document.write(html);
   w.document.close();
 }
 
 function imprimirTablaPrincipal() {
   if(documentos.length === 0) return alert('No hay documentos para imprimir.');
-  let filas = '';
-  documentos.forEach(d => {
-    filas += `<tr><td>${d.tipoDoc}</td><td>${d.fecha}</td><td>${d.folio}</td><td>${d.rut || '—'}</td><td>${d.nombre || '—'}</td><td style="text-align:right">${fmt(d.neto)}</td><td style="text-align:right">${fmt(d.exento)}</td><td style="text-align:right">${fmt(d.iva)}</td><td style="text-align:right"><b>${fmt(d.total)}</b></td><td>${d.pago || '—'}</td></tr>`;
-  });
-  let html = `<html><head><meta charset="UTF-8"><title>Todos los Documentos</title><style>body{font-family:Arial,sans-serif;padding:30px;color:#172033}h1{color:#1e3a8a;border-bottom:2px solid #1e3a8a;padding-bottom:10px}table{width:100%;border-collapse:collapse;font-size:12px;margin-top:20px}th{background:#f3f4f6;color:#374151;padding:10px;text-align:left;border-bottom:2px solid #d1d5db}td{padding:8px;border-bottom:1px solid #e5e7eb}tr:nth-child(even){background:#f9fafb}@media print{body{padding:0}}</style></head><body><h1>📑 Listado General de Documentos</h1><p>Generado el ${new Date().toLocaleDateString('es-CL')} · ${documentos.length} documentos</p><table><thead><tr><th>Tipo Doc.</th><th>Fecha</th><th>Folio</th><th>RUT</th><th>Nombre</th><th style="text-align:right">Neto</th><th style="text-align:right">Exento</th><th style="text-align:right">IVA</th><th style="text-align:right">Total</th><th>Pago</th></tr></thead><tbody>${filas}</tbody></table><script>setTimeout(()=>window.print(),300);<\/script></body></html>`;
-  const w = window.open('', '_blank'); w.document.write(html); w.document.close();
+  let fl='';documentos.forEach(d=>{fl+=`<tr><td>${d.tipoDoc}</td><td>${d.fecha}</td><td>${d.folio}</td><td>${d.rut||'—'}</td><td>${d.nombre||'—'}</td><td style="text-align:right">${fmt(d.neto)}</td><td style="text-align:right">${fmt(d.exento)}</td><td style="text-align:right">${fmt(d.iva)}</td><td style="text-align:right"><b>${fmt(d.total)}</b></td><td>${d.pago||'—'}</td></tr>`});
+  let h=`<html><head><meta charset="UTF-8"><title>Documentos</title><style>body{font-family:sans-serif;padding:30px}h1{color:#1e3a8a;border-bottom:2px solid #1e3a8a;padding-bottom:10px}table{width:100%;border-collapse:collapse;font-size:12px;margin-top:20px}th{background:#f3f4f6;color:#374151;padding:10px;text-align:left;border-bottom:2px solid #d1d5db}td{padding:8px;border-bottom:1px solid #e5e7eb}tr:nth-child(even){background:#f9fafb}@media print{body{padding:0}}</style></head><body><h1>📑 Listado General de Documentos</h1><p>Generado el ${new Date().toLocaleDateString('es-CL')} · ${documentos.length} documentos</p><table><thead><tr><th>Tipo Doc.</th><th>Fecha</th><th>Folio</th><th>RUT</th><th>Nombre</th><th style="text-align:right">Neto</th><th style="text-align:right">Exento</th><th style="text-align:right">IVA</th><th style="text-align:right">Total</th><th>Pago</th></tr></thead><tbody>${fl}</tbody></table><script>setTimeout(()=>window.print(),300);<\/script></body></html>`;
+  let w=window.open('','_blank');w.document.write(h);w.document.close();
 }
 
 function imprimirLibro(tipo) {
   const esCompra = tipo === 'compras';
-  const filtrados = documentos.filter(d => d.tipo === (esCompra ? 'compra' : 'venta')).sort((a,b) => a.fecha.localeCompare(b.fecha) || (esCompra ? a.nombre.localeCompare(b.nombre) : 0) || String(a.folio).localeCompare(String(b.folio)));
+  const filtrados = documentos.filter(d => d.tipo === (esCompra ? 'compra' : 'venta')).sort((a,b) => a.fecha.localeCompare(b.fecha));
   if(filtrados.length === 0) return alert('No hay documentos en este libro.');
-  let filas = '', tNeto=0, tExento=0, tIva=0, tTotal=0;
-  filtrados.forEach(d => {
-    tNeto += d.neto; tExento += d.exento; tIva += d.iva; tTotal += d.total;
-    filas += `<tr><td>${d.tipoDoc}</td><td>${d.fecha}</td><td>${d.folio}</td><td>${d.rut || '—'}</td><td>${d.nombre || '—'}</td><td style="text-align:right">${fmt(d.neto)}</td><td style="text-align:right">${fmt(d.exento)}</td><td style="text-align:right">${fmt(d.iva)}</td><td style="text-align:right"><b>${fmt(d.total)}</b></td><td>${d.pago || '—'}</td></tr>`;
+  
+  let fl='',tn=0,te=0,ti=0,tt=0;
+  filtrados.forEach(d=>{
+    tn+=d.neto; te+=d.exento; ti+=d.iva; tt+=d.total;
+    fl+=`<tr><td>${d.tipoDoc}</td><td>${d.fecha}</td><td>${d.folio}</td><td>${d.rut||'—'}</td><td>${d.nombre||'—'}</td><td style="text-align:right">${fmt(d.neto)}</td><td style="text-align:right">${fmt(d.exento)}</td><td style="text-align:right">${fmt(d.iva)}</td><td style="text-align:right"><b>${fmt(d.total)}</b></td><td>${d.pago||'—'}</td></tr>`;
   });
-  const titulo = esCompra ? 'LIBRO DE COMPRAS' : 'LIBRO DE VENTAS';
-  const color = esCompra ? '#991b1b' : '#065f46';
-  const fondo = esCompra ? '#fef2f2' : '#ecfdf5';
-  let html = `<html><head><meta charset="UTF-8"><title>${titulo}</title><style>body{font-family:Arial,sans-serif;padding:30px;color:#172033}h1{color:${color};border-bottom:3px solid ${color};padding-bottom:10px}table{width:100%;border-collapse:collapse;font-size:12px;margin-top:20px}th{background:${fondo};color:${color};padding:10px;text-align:left;border-bottom:2px solid ${color}}td{padding:8px;border-bottom:1px solid #e5e7eb}tfoot td{background:${fondo};font-weight:bold;border-top:2px solid ${color};padding:10px}@media print{body{padding:0}}</style></head><body><h1>📘 ${titulo}</h1><p>Generado el ${new Date().toLocaleDateString('es-CL')} · ${filtrados.length} documentos</p><table><thead><tr><th>Tipo Doc.</th><th>Fecha</th><th>Folio</th><th>RUT</th><th>Nombre</th><th style="text-align:right">Neto</th><th style="text-align:right">Exento</th><th style="text-align:right">IVA</th><th style="text-align:right">Total</th><th>Pago</th></tr></thead><tbody>${filas}</tbody><tfoot><tr><td colspan="5" style="text-align:right">TOTALES</td><td style="text-align:right">${fmt(tNeto)}</td><td style="text-align:right">${fmt(tExento)}</td><td style="text-align:right">${fmt(tIva)}</td><td style="text-align:right">${fmt(tTotal)}</td><td></td></tr></tfoot></table><script>setTimeout(()=>window.print(),300);<\/script></body></html>`;
-  const w = window.open('', '_blank'); w.document.write(html); w.document.close();
+  
+  let t = esCompra ? 'Libro de Compras' : 'Libro de Ventas';
+  let c = esCompra ? '#991b1b' : '#065f46';
+  let bg = esCompra ? '#fef2f2' : '#ecfdf5';
+
+  let h = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${t}</title><style>
+    body{font-family:Arial,sans-serif;padding:30px;color:#172033}
+    h1{color:${c};border-bottom:3px solid ${c};padding-bottom:10px}
+    .sub{color:#667085;font-size:0.9rem;margin-bottom:20px}
+    table{width:100%;border-collapse:collapse;font-size:0.82rem}
+    th{background:${bg};color:${c};padding:9px 8px;text-align:left;border-bottom:2px solid ${c}}
+    td{padding:7px 8px;border-bottom:1px solid #e5e7eb}
+    tr:nth-child(even){background:#f9fafb}
+    tfoot td{background:${bg};font-weight:700;border-top:2px solid ${c};padding:10px 8px}
+    .aviso{margin-top:20px;font-size:0.78rem;color:#667085;text-align:center}
+    .ayuda{text-align:center;margin-bottom:20px;padding:15px;background:#eff6ff;border-radius:8px;color:#1e40af;font-size:0.9rem}
+    @media print{.no-print{display:none}}
+  </style></head><body>
+    <h1>📘 ${t}</h1>
+    <div class="sub">Generado el ${new Date().toLocaleDateString('es-CL')} · ${filtrados.length} documentos</div>
+    <div class="ayuda no-print">💡 <b>Para guardar como PDF:</b> En el menú que se abre, busca "Destino" y selecciona "Guardar como PDF". Luego aprieta el botón azul "Guardar".</div>
+    <table>
+      <thead><tr><th>Tipo Doc.</th><th>Fecha</th><th>Folio</th><th>RUT</th><th>Nombre</th><th style="text-align:right">Neto</th><th style="text-align:right">Exento</th><th style="text-align:right">IVA</th><th style="text-align:right">Total</th><th>Pago</th></tr></thead>
+      <tbody>${fl}</tbody>
+      <tfoot><tr><td colspan="5" style="text-align:right">TOTALES</td><td style="text-align:right">${fmt(tn)}</td><td style="text-align:right">${fmt(te)}</td><td style="text-align:right">${fmt(ti)}</td><td style="text-align:right">${fmt(tt)}</td><td></td></tr></tfoot>
+    </table>
+    <div class="aviso">Documento generado con fines educativos.</div>
+    <script>setTimeout(function(){ window.print(); }, 500);<\/script>
+  </body></html>`;
+  
+  let w = window.open('', '_blank');
+  w.document.write(h);
+  w.document.close();
 }
 
 cambiarTipoDoc();
