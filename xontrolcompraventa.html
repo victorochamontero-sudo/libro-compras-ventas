@@ -439,7 +439,8 @@ function explicarDocumento(d) {
   return `<div style="background:#fef3c7;padding:14px;border-radius:6px;"><b>📘 ¿Qué es?</b> ${d.tipoDoc}. ${esB?'Las boletas no dan crédito fiscal.':'Documento tributario.'}<br><br><b>📊 Cuentas afectadas:</b><ul>${cta}</ul><b>📖 Asiento Contable:</b><br>${asiento}</div>`;
 }
 function toggleExplica(id) {
-  document.getElementById(id).classList.toggle('hidden');
+  const row = document.getElementById('explica-' + id);
+  if (row) row.classList.toggle('hidden');
 }
 
 function sortLibro(tipo, campo) {
